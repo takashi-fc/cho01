@@ -129,3 +129,78 @@ mysql> SELECT
 こんな感じで、(-1.0, -1.0)から(1, 1)を0.1刻みで分割した(x, y)の組み合わせを生成することができました。
 あとはGROUP_CONCAT関数を使って結合してあげれば完成です。
 実際にやってみます。
+
+```
+mysql> SELECT
+    ->   GROUP_CONCAT(
+    ->     value
+    ->     ORDER BY x_axis, y_axis DESC
+    ->     SEPARATOR ''
+    ->   ) AS 'Coordinate plane'
+    -> FROM (
+    ->   SELECT
+    ->     grid.x_axis,
+    ->     grid.y_axis,
+    ->     CASE
+    ->       WHEN grid.x_axis = 0    AND y_axis = 0
+    ->         THEN '-+-'
+    ->       WHEN grid.x_axis = -0.1 AND y_axis = -0.1
+    ->         THEN ' O '
+    ->       WHEN grid.x_axis = 0.1  AND y_axis = -1
+    ->         THEN ' y '
+    ->       WHEN grid.x_axis = 1    AND y_axis = -0.1
+    ->         THEN ' x '
+    ->       WHEN grid.x_axis = 0
+    ->         THEN ' | '
+    ->       WHEN grid.y_axis = 0
+    ->         THEN '---'
+    ->       ELSE '   '
+    ->     END AS value
+    ->   FROM (
+    ->     SELECT
+    ->       (i.id - 11) / 10 AS x_axis,
+    ->       (j.id - 11) / 10 AS y_axis
+    ->     FROM
+    ->       increments AS i,
+    ->       increments AS j
+    ->     ORDER BY
+    ->       x_axis,
+    ->       y_axis
+    ->   ) AS grid
+    ->   ORDER BY
+    ->     grid.x_axis,
+    ->     grid.y_axis
+    -> ) AS vlues,
+    -> (
+    ->   SELECT @cel_size := 10
+    -> ) AS cel_size
+    -> GROUP BY
+    ->   y_axis
+    -> ;
++-----------------------------------------------------------------+
+| Coordinate plane                                                |
++-----------------------------------------------------------------+
+|                                |  y                             |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                             O  |                             x  |
+| -------------------------------+------------------------------- |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
+|                                |                                |
++-----------------------------------------------------------------+
+21 rows in set (0.00 sec)
+```
