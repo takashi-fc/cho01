@@ -38,5 +38,16 @@ open book.pdf
 ## 自分の書いた文章をpdf化したいフレンズ
 
 ```
-じゅんびちゅー
+# markdonで書いていた場合、Re:View形式に変換
+cd cho01
+md2review roana0229/gas.md > articles/gas.re
+
+cd articles
+vim catalog.yml
+### CHAPS:
+###  - ファイル名を追記
+
+# .reをpdf化
+review-pdfmaker config.yml
+open cho01.pdf
 ```
