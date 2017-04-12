@@ -10,6 +10,7 @@ git clone git@github.com:takashi-fc/cho01.git && cd cho01
 rbenv install 2.2.3
 rbenv rehash
 gem install review
+gem install md2review # markdownで書いている場合
 ```
 
 #### PDFを作るのが得意なフレンズになる方法（上の作業中に並行してやるのがオススメ）
