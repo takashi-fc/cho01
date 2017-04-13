@@ -1,5 +1,5 @@
 
-= ご挨拶
+= PHPのORマッパーを調べてみた 2017
 
 
 こんにちは。 @boscoworks です。普段は目黒あたりでPHPエンジニアをやっています。@<br>{}
@@ -11,33 +11,42 @@
 ということで、最近のPHPのORマッパーをあれこれ調べることにしてみましたよ。  
 
 
-= 調査対象
+== 調査対象
 
 
 独断と偏見で以下をピックアップしました。  
 
 
-== 1. Propel
+=== 1. Propel
  * 一時代前のSymfonyが標準ORMとして導入していたやつ。最近はあんまり聞かない。
  ** http://propelorm.org/
  ** https://github.com/propelorm/Propel2
- ** https://packagist.org/packages/propel/propel## 2. Doctrine
+ ** https://packagist.org/packages/propel/propel
+
+
+=== 2. Doctrine
  * 最近のSymfonyが標準ORMとして導入しているやつ。ザ・PHPのORM感ある。
  ** http://www.doctrine-project.org/
  ** https://github.com/doctrine/doctrine2
- ** https://packagist.org/packages/doctrine/orm## 3. Eloquent
+ ** https://packagist.org/packages/doctrine/orm
+
+
+=== 3. Eloquent
  * LaravelのORM。こいつが有名というよりは、Lavavelが急成長した結果、相対的に使われるようになった的な。
  ** https://laravel.com/docs/5.4/eloquent
  ** https://github.com/illuminate/database
  ** https://github.com/laravel/framework
  ** https://packagist.org/packages/illuminate/database
- ** https://packagist.org/packages/laravel/framework## 4. Idiorm & Paris
+ ** https://packagist.org/packages/laravel/framework
+
+
+=== 4. Idiorm & Paris
  * 「PHP ORマッパー」でググると上の方に出てくるやつ。
  ** http://j4mie.github.io/idiormandparis/
  ** https://github.com/j4mie/idiormandparis
 
 
-= 調査方法
+== 調査方法
 
 
 3つの視点から「どのORマッパーが人気なのか」を探ります。
@@ -47,12 +56,12 @@
  * Packagist経由でのcomposer install数
 
 
-== Googleトレンドによる人気度の動向調査
+=== Googleトレンドによる人気度の動向調査
  * https://trends.google.co.jp/trends/explore?q=propel%20php,doctrine%20php,eloquent%20php,idiorm%20php
 
 
 
-//image[trend1][trend1]{
+//image[boscoworks_trend1][ORM動向]{
 //}
 
 
@@ -68,7 +77,7 @@ Idiorm...( ＾ω＾)
 
 
 
-//image[trend2][trend2]{
+//image[boscoworks_trend2][フレームワーク動向]{
 //}
 
 
@@ -77,7 +86,7 @@ Idiorm...( ＾ω＾)
 Symfonyはシェアを落とすことなく、ただLaravelが怒涛の右肩上がり。Laravel人気すごいですね。  
 
 
-== GitHubのStar数、Fork数
+=== GitHubのStar数、Fork数
 
 
 Star数、Fork数が多いということは、すなわち開発が活発に行われているということ。@<br>{}
@@ -104,7 +113,7 @@ DoctrineとEloquentはいいとして、PropelのStar数、Fork数がそこそ�
 いまやレガシーなORMと思いきや、しっかりメンテナーもついているんですね。  
 
 
-== Packagist経由でのcomposer install数
+=== Packagist経由でのcomposer install数
 //table[tbl2][]{
 ORM	Install数
 -----------------
@@ -124,7 +133,7 @@ Idiorm	194,306
 Idiorm は composer install はされてるのに GitHub では下火なのが印象的。興味本位でインストールして、そのままバイバイなケースが多いのかな。  
 
 
-= 結局
+== 結局
 
 
 わかってたけど、それが数字としてはっきり出た感じはしますね。時代は Laravel 。@<br>{}
