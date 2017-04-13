@@ -41,14 +41,17 @@
 
 ## Googleトレンドによる人気度の動向調査
  - https://trends.google.co.jp/trends/explore?q=propel%20php,doctrine%20php,eloquent%20php,idiorm%20php
-（ここに画像を貼りたい）
+  
+![trend1](https://github.com/takashi-fc/cho01/blob/master/boscoworks/imgs/trend1.png)
 
 Doctrineはさすが王者の風格、1位を譲らないですね。  
 注目はEloquent、2013年末あたりでPropelを追い越してからも順調に右肩上がり。いまやDoctrineに並ぶ勢いですね。  
 Idiorm...( ＾ω＾)  
 
 これ結局SymfonyとLaravelのシェア争いとイコールになるんじゃないかと思い調べてみると。  
-（ここに画像を貼りたい）  
+
+![trend2](https://github.com/takashi-fc/cho01/blob/master/boscoworks/imgs/trend2.png)
+  
 Symfonyはシェアを落とすことなく、ただLaravelが怒涛の右肩上がり。Laravel人気すごいですね。  
 
 ## GithubのStar数、Fork数
