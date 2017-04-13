@@ -1,48 +1,125 @@
-# GoogleAppsScriptの快適な開発環境（ES6 + ローカル開発）
+# GoogleAppsScriptライブラリ開発
 
-みなさんGoogleAppsScriptは使ったことがありますか？
-GoogleAppsScriptは簡単に言うと、Googleのサーバ上でJavaScriptを実行できるサービスです。
-Googleのサービスとの連携が簡単で、様々なことができます。例えば、
+みなさんGoogleAppsScript（以下、GAS）は使ったことがありますか？
+GASは簡単に言うと、Googleのサーバ上でJavaScriptを実行できるサービスです。
+外部にAPIとして公開しPOST,GETのリクエストを受けたり、GoogleFusionTables（以下、FusionTables）やGoogleSpreadSheets（以下、SpreadSheets）でデータを保持することもできます。
+個人のアプリでもバックエンドにGASを利用していて、DBにSpreadSheetsを利用し、ライブラリ化した際に得られた知見と成果の内容です。
 
-* GoogleFormsで作ったアンケートが回答されたらチャットに流す。
-* 毎日クロールした結果をGoogleSpreadSheetsに溜めていく。
-* 毎朝GooglePlay,AppStoreのレビューをチャットに流す。
+## きっかけとGoogleAppsScriptから利用するDBの選択
 
-のようなことができます。ただ、オンラインエディタ上でしか書けないため、普段使いしている慣れた環境で開発することができません。
-この章では、オンラインエディタではなくES6+ローカルで開発できるようにするという内容です。
+結論から言うと、FusionTablesよりSpreadSheetsを利用することをオススメします。
+理由としては、FusionTablesがUPDATE, DELETEでWHERE句が利用できないからです。正確に言うと、ROW_IDというオートインクリメントされるカラムしか指定できません。
+削除したい対象をSELECTで抽出してから、ROW_IDを指定してDELETEすることは可能です。
+しかし、書き込みの上限が30件/分かつ5000件/日と厳しく、リクエストを送るクライアントが多いと現実的ではありません。
 
-## ローカルで開発する
+そこでSpreadSheetsの出番です。SpreadSheetsをDBとして扱うメリットとしては「非エンジニアでも触れる」だと思います。例えば、
 
-ローカルのファイルをアップロードするための選択肢として
+* ボタンやプッシュ通知のA/Bパターン文言
+* メールやチャットで利用するテンプレートメッセージ
 
-* https://github.com/danthareja/node-google-apps-script
-* https://github.com/soundTricker/gas-manager
+などを改善していく際に、エンジニアを介さず行えることが大きな利点です。
+そんな気軽に変更されてはたまらん！というデータはシートを分けておき、編集可能者を制限しておくと良いでしょう。それぞれに実行権限を付与できるのも利点です。
 
-があります。今回はGoogleDevelopersJapanで過去に紹介されたnode-google-apps-scriptを利用します。
+良いところしかないのかと言うとそうではなく、SpreadSheetsのAPIで提供されているメソッドでしか情報をやり取りすることができません。そして、そこにSQLの選択肢はなく、SQLを利用してデータを抽出することができません。
+そこで SpreadSheetsSQL というSpreadSheetsからSQLライクにデータを抽出できるGASのライブラリを公開しています。このライブラリなしでもSpreadSheetsをDBとして利用することはです。
 
-1. GoogleDrive上でGoogleAppsScriptのプロジェクトを作成
-2. そのプロジェクトを開いて、[リソース] > [Googleの拡張サービス] を開いてDriveApiを有効にする
-3. そのまま[Google API コンソール]のリンクをクリック
-4. [Google Apps API] > [Drive API] > [有効にする]をクリック
-5. そのまま左メニューの[認証情報] > [認証情報を作成] > [OAuthクライアントID]をクリック
-6. アプリケーションの種類は[その他]、名前に[GoogleAppsScript-local-development]など適当な名前を設定し、作成
-7. OAuthクライアントという画面が表示されるがそのまま閉じる
-8. 作成した[GoogleAppsScript-local-development]の右側にあるダウンロードボタンをクリックし、jsonを保存
-9. `npm install -g node-google-apps-script`
-10. `gapps auth ダウンロードしたjsonのパス`
-11. 表示されるURLをブラウザで開いて、認証
-12. `gapps init 1で作成したプロジェクトのID` (IDは[https://script.google.com/d/xxx/edit]の[xxx]部分)
-13. [gapps.config.json], [src/コード.js]が作成されている
-14. `gapps upload`することでコード.jsが反映されます
+## ライブラリの開発
 
-これでローカルで編集したファイルを反映させることができ、Gitで管理できるようになりました。
-srcディレクトリでファイルを作成・削除・変更したものが同期されます。その際、.jsから.gsへとGoogleAppsScript用の形式に変換されます。.jsが不完全な場合に.gsへの変換が失敗し同期が失敗します。
+> SpreadSheetsSQL: https://github.com/roana0229/spreadsheets-sql
 
-## ES6で開発する
+GASのライブラリはGASで作ることができます。SpreadSheetsSQLのソースコードを例に説明します。
+まず初めにこのライブラリを使う時は以下のように使います。
 
-GoogleAppsScriptはES6に対応していないため、ES6で記述したJavaScriptをそのまま実行することはできません。
+```サンプルコード
+var result = SpreadSheetsSQL.open(SHEET_ID, SHEET_NAME).select(['name', 'cv']).result();
+
+// resultの内容
+[{
+  name: 'サーバルちゃん',
+  cv: '尾崎由香'
+},{
+  name: 'かばんちゃん',
+  cv: '内田彩'
+}]
+```
+
+SpreadSheetsSQLを利用する際には、`SpreadSheetsSQL.open()`を呼ぶ必要があります。
+これは`ライブラリのプロジェクト名.メソッド`という形になっていて
+
+```SpreadSheetsSQL.gs
+/**
+ * This method use to create SpreadSheetsSQL instance.
+ * @param {String} id SpreadSheet id
+ * @param {String} name SpreadSheet sheet name
+ * @return {SpreadSheetsSQL} SpreadSheetsSQL instance
+ */
+function open(id, name) {
+  return new SpreadSheetsSQL_(id, name);
+}
+```
+
+コードではこのようになっています。コメントはJSDocで記述することができます。
+`new SpreadSheetsSQL_(id, name)`で`SpreadSheetsSQL_`というクラスをインスタンス化していることがわかると思います。
+また、末尾にアンダースコアがついていることにお気付きかと思います。これはスコープ制御をするためであり、ライブラリ内でのみ参照できるプライベートな状態になります。
+`SpreadSheetsSQL.open()`した際の戻り値は`SpreadSheetsSQL_`型ですが、JSDocにはアンダースコアなしで記述されています。
+実際にはプライベートクラスのインスタンスが返っているが、JSDocを見るとプロジェクト名の型のようなものが返るということです。
+
+次に取得するカラムの指定に`SpreadSheetsSQL.open().select()`を呼ぶ必要があります。
+
+```SpreadSheetsSQL.gs
+/**
+ * This method use to get columns.
+ * <pre><code>Example: SpreadSheetsSQL.open(id, name).select(['name', 'age', 'married', 'company']).result();
+ * </pre></code>
+ * @param {String[]} selects column array
+ * @return {SpreadSheetsSQL} SpreadSheetsSQL instance
+ */
+function select(selects) {
+  throw new Error("it's a mock method for content assist");
+}
+```
+
+コードではこのようになっています。`result()`でも同様のコードが記述されています。
+呼び出されたら例外を投げるメソッドに見えます。しかし、ここで宣言されているメソッドはあくまでライブラリ外から参照するためのメソッドでしかありません。実態は
+
+```SpreadSheetsSQL.gs
+class SpreadSheetsSQL_ {
+  ...
+  select(selects) {...}
+  ...
+}
+```
+
+のように`SpreadSheetsSQL_`クラス内に記述されています。通常ではプライベートなクラスのメソッドは外からは見えず呼び出すことができません。メソッドが見えないということは呼び出すことができないということになっていまします。
+そのため、ライブラリのライブラリのルート階層にインターフェースとして記述し、プライベートなメソッドでもGASのオンラインエディタでの補完を有効にしています。
+
+まとめるとこのようになります。
+
+* プロジェクト名.メソッドという形で呼び出すことができる。
+* 末尾にアンダースコアでライブラリ外からは見えないようにする。
+* 補完のためのインターフェースをルート階層に列挙し、JSDocの@returnにはライブラリ名を指定する。
+
+## ライブラリの公開
+
+開発もそこまで気をつけることはありませんでしたが、公開はもっと簡単です。
+
+1. GASのライブラリ化したいプロジェクトを開く。
+2. 「ファイル」->「版を管理」に移動して、新しいバージョンを保存する。
+3. 「ファイル」->「プロジェクトのプロパティ」で表示される、スクリプトIDを共有する。
+
+たったこれだけで、他人がでライブラリとしてGASプロジェクトを扱うことができます。
+
+## おまけ: ES6 + ローカルで開発する
+
+GASは個人でサーバを用意せず、気軽に開発できて便利です。
+ただ、オンラインエディタ上でしか書けないため、普段使いしている慣れた環境で開発することができません。
+そこでbabel + gulp + node-google-apps-script を使うことで、ES6かつローカルで開発しています。
+
+ローカルのファイルをアップロードするための選択肢としていくつか方法がありますが、今回はGoogleDevelopersJapanで過去に紹介された node-google-apps-script (https://github.com/danthareja/node-google-apps-script) を利用します。セットアップはURL先に譲ります。
+
+また、GASはES6に対応していないため、ES6で記述したJavaScriptをそのまま実行することはできません。
 そのため https://babeljs.io を利用して、実行可能なJavaScriptのコードに変換します。
-単純にBABELを利用して変換しても良いですが、コードを変更したら自動で変換できるように、gulpも利用します。
+単純にbabelを利用して変換しても良いですが、コードを変更したら自動で変換+同期できるように、gulpを利用します。
 
 1. `npm install -g gulp && npm install --save-dev gulp gulp-babel babel-preset-es2015`
 2. es6というディレクトリを作って、そこに`コード.js`と同じ名前のファイルを作成
@@ -78,7 +155,7 @@ gulp.task('upload', () => {
 });
 ```
 
-```es6/コード.js
+```es6のコード.js
 class Bot {
   constructor(message) {
     this.message = message;
@@ -95,33 +172,38 @@ function main() {
 }
 ```
 
-これでローカルでes6のコードを変換し、GoogleAppsScript上で実行することができました。
+```babelによって変換されたコード.js
+"use strict";
 
-## コマンドラインからGoogleAppsScript上のコードを実行する
+var _createClass = function () {...}();
 
-さて、ローカルで快適にJavaScriptを書くことができるようになりましたが、今のままでは結局オンラインエディタ上で実行しないといけません。
+function _classCallCheck(instance, Constructor) {...}
 
-1. 先程作ったGoogleAppsScriptのプロジェクトを開く
-2. そのプロジェクトを開いて、[リソース] > [Googleの拡張サービス] を開いてDriveApiを有効にする
-3. そのまま[Google API コンソール]のリンクをクリック
-4. [Google Apps API] > [Google Apps Script Execution API] > [有効にする]をクリック
+var Bot = function () {
+  function Bot(message) {
+    _classCallCheck(this, Bot);
 
-```実行コマンド
-curl -X POST https://script.googleapis.com/v1/scripts/1BIxem_DZ-9n1lScDDl_WMe6hnh2iAt9gkIavbhI3FQj2ChwLimPBfU79:run \
--d '{
-  "function": "main",
-  "parameters": [
-    "hoge"
-  ],
-  "devMode": true,
-}'
+    this.message = message;
+  }
+
+  _createClass(Bot, [{
+    key: "say",
+    value: function say() {
+      Logger.log(this.message);
+    }
+  }]);
+
+  return Bot;
+}();
+
+function main() {
+  var bot = new Bot("ようこそ技術書典へ");
+  bot.say();
+}
 ```
 
-これでコードの書き始め〜完成まで、全てローカルで試せるようになりました。
+これでローカルかつES6で開発しながら、GASに実行可能な状態で同期することができました。
 
 ## さいごに
 
-どうでしたか？冒頭で書いた以外にもGoogleAppsScriptは様々な用途に使用できます。
-cronのように定期的に実行することも可能であれば、APIとしてget,postなどを実装することも可能です。
-つまり、無料で日々のタスクの自動化からアプリのAPIとして利用することも可能だということです。
-より快適なGoogleAppsScript開発のための内容でした。
+どうでしたか？GoogleAppsScriptが大きく目立つことがない中、更にそのライブラリを作るというニッチなところまとめてみました。GoogleAppsScriptはAPI+DBとしてだけではなく、cronのように定期的に処理を実行することも可能です。また、個人ではなかなかサーバ側に手が出せないという人や、ちょっとした便利ツールを作る時にとても便利だと思っています。
