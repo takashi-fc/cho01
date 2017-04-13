@@ -36,7 +36,7 @@
 3つの視点から「どのORマッパーが人気なのか」を探ります。
 
 + 「Googleトレンド ( https://trends.google.co.jp/trends/ )」による人気度の動向調査
-+ GithubのStar数、Fork数
++ GitHubのStar数、Fork数
 + Packagist経由でのcomposer install数
 
 ## Googleトレンドによる人気度の動向調査
@@ -54,7 +54,7 @@ Idiorm...( ＾ω＾)
   
 Symfonyはシェアを落とすことなく、ただLaravelが怒涛の右肩上がり。Laravel人気すごいですね。  
 
-## GithubのStar数、Fork数
+## GitHubのStar数、Fork数
 Star数、Fork数が多いということは、すなわち開発が活発に行われているということ。  
 不具合があれば直りやすいし、周辺技術への追従も比較的頻繁に行われるかもしれません。  
 
