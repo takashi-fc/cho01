@@ -84,5 +84,13 @@ DoctrineとEloquentはいいとして、PropelのStar数、Fork数がそこそ�
 
 (※3/28調べ)
 
-こうやってみるとDoctrine健闘しているんですね。Laravel本体といい勝負。
+こうやってみると Doctrine 健闘しているんですね。 Laravel 本体といい勝負。  
+Idiorm は composer install はされてるのに GitHub では下火なのが印象的。興味本位でインストールして、そのままバイバイなケースが多いのかな。  
+  
+# 結局
+わかってたけど、それが数字としてはっきり出た感じはしますね。時代は Laravel 。  
+Ruby 界隈で Rails が覇道を行くように、いまは PHP on Laravel 。  
+Laravel を使うならORマッパーは Eloquent を自然に使うべきだし、 Laravel を選べないなら Doctrine 。  
+10年くらい前の PHP 界隈では Propel VS Doctrine だった気もするけどなぁ。時代は流れ行くものです。こうして老害になっていくのだ。  
+
 
