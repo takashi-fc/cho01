@@ -106,7 +106,7 @@ func TrimSubject(s string) (string, error) {
         // 最初のチャンクをスキップする。また主語は名詞であることが多いので名詞で始まるときも条件に加える
         if i == 0 && chunk.Tokens[0].Features[0] == "名詞" {
             continue
-        } 
+        }
 
         }
         for _, token := range chunk.Tokens {
@@ -138,11 +138,11 @@ zuikaku:friends-transl
 //}
 
 
-まず邪魔なセルリアン的な文字である @<tt>{だ} は助動詞であるようだ。
+まず邪魔なセルリアン的な文字である「だ」は助動詞であるようだ。
 一番最後の助動詞をぶった切ろう。
 すると「歌うのが好き」という言葉が抽出できるようになる。
 そして「すごーい、君は歌うのが好きフレンズなんだね」という言葉が生成出来るようになるが。
-日本語が苦手なフレンズのような言葉になってしまうので一番最後に @<tt>{な} を入れてあげる。
+日本語が苦手なフレンズのような言葉になってしまうので一番最後に 「な」 を入れてあげる。
 すると晴れて「すごーい、君は歌うのが好きなフレンズなんだね」という文書を生成できる。
 
 
@@ -214,3 +214,100 @@ $ go run main.go -i 僕は友達が少ない
 ネガティブな言葉を入力されると煽られている感じになる。
 サーバルちゃんは煽ってこないのだ。
 
+
+== 煽られないようにする
+
+
+端的にいうとポジティブな発言のときに「すごーい」と言わせてそれ意外のときは「だいじょーぶ、フレンズには得意不得意があるから。」
+と言ってもらえば良い。
+
+
+=== 手法について
+
+
+@<tt>{東北大学の乾・岡崎研究室が公開している日本語評価極性辞書} と言うものを利用してネガポジ判定を行う。
+この辞書は用語の感情極性をネガティブ、ポジティブの2値で、名詞の感情極性をネガティブ、ポジティブ、ニュートラルで表している。
+この辞書を利用してネガポジ判定を行う。
+
+
+=== 実装する
+
+
+形態素解析解析によって分割された単語から名詞の基本形と用言を取得する。
+
+
+//emlist{
+$ echo "私は歌うのが好き" | mecab
+私 名詞,代名詞,一般,*,*,*,私,ワタシ,ワタシ
+は 助詞,係助詞,*,*,*,*,は,ハ,ワ
+歌う  動詞,自立,*,*,五段・ワ行促音便,基本形,歌う,ウタウ,ウタウ
+の 名詞,非自立,一般,*,*,*,の,ノ,ノ
+が 助詞,格助詞,一般,*,*,*,が,ガ,ガ
+好き  名詞,形容動詞語幹,*,*,*,*,好き,スキ,スキ
+//}
+
+
+すると「私」、「歌う」、「の」、「好き」が取り出せる。
+辞書には「好き」がポジティブなのでポジティブ側のパラメータを+1する。
+これによって文書がポジティブであることを判定できる。
+
+
+=== 実際の実装
+
+//emlist{
+type NPElem struct {
+    p int
+    s string
+}
+var index = map[string][]NPElem{}
+
+func readNPIndex(path string) error {
+    var err error
+    f, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    reader := bufio.NewReader(f)
+    for line := ""; err == nil; line, err = reader.ReadString('\n') {
+        line = strings.Replace(line, "\n", "", -1)
+        i := strings.Split(line, "\t")
+        if len(i) < 2 {
+            continue
+        }
+        np := parseNP(i[0])
+        words := strings.Split(i[1], " ")
+
+        e := NPElem{np, i[1]}
+        key := words[0]
+        index[key] = append(index[key], e)
+    }
+    return nil
+}
+
+func CalcNP(s string) (int, error) {
+    var result int
+    nodes, err := mecab.Parse(s)
+    if err != nil {
+        return 0, err
+    }
+    for _, node := range nodes {
+        elems, ok := index[node.Base]
+        if !ok {
+            continue
+        }
+
+        result += elems[0].p
+    }
+    return result, nil
+}
+//}
+
+=== 実行結果
+
+//emlist{
+$ go run main.go -i 私は歌が好き
+すごーい。君は歌が好きなフレンズなんだね
+
+go run main.go -i 僕は運動が苦手だ
+だいじょーぶ。フレンズには得意不得意があるからー。
+//}
