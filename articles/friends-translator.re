@@ -53,16 +53,21 @@
 
 
 テンプレートは以下のようなものを使うとする
-@<tt>{
-「すごーい、君は◯◯フレンズなんだね」
-}
 
+
+//emlist{
+「すごーい、君は◯◯フレンズなんだね」
+//}
 
 
 つまり翻訳後は
-@<tt>{
+
+
+//emlist{
 「すごーい、君は歌うのが好きなフレンズなんだね」
-}
+//}
+
+
 となるべきである。
 
 
@@ -117,7 +122,9 @@ func TrimSubject(s string) (string, error) {
 「私は歌うのが好きだ」において「歌うのが好きだ」が抽出できる。
 しかし、このままでは「君は歌うのが好きだフレンズなんだね」となり文章的に違和感のあるものになってしまう。
 mecabで文書構造を見てみよう
-@<tt>{
+
+
+//emlist{
 $ echo 私は歌うのが好きだ | mecab
 私 名詞,代名詞,一般,*,*,*,私,ワタシ,ワタシ
 は 助詞,係助詞,*,*,*,*,は,ハ,ワ
@@ -128,8 +135,7 @@ $ echo 私は歌うのが好きだ | mecab
 だ 助動詞,*,*,*,特殊・ダ,基本形,だ,ダ,ダ
 EOS
 zuikaku:friends-transl
-}
-
+//}
 
 
 まず邪魔なセルリアン的な文字である @<tt>{だ} は助動詞であるようだ。
@@ -143,7 +149,9 @@ zuikaku:friends-transl
 
 ちなみに今回は「好き」が形容詞語幹なので「な」を挿入したが一般のときは「の」を入れてやるとそれっぽくなる。
 コード化すると以下のようになる。
-```
+
+
+//emlist{
 //第一引数活用させたもの
 //第二引数未活用のもの
 func ExtractCharacteristicWords(s string) (string, string, error) {
@@ -163,30 +171,24 @@ func ExtractCharacteristicWords(s string) (string, string, error) {
                 ret = append(ret, node.Surface)
             }
 
-
-//emlist{
-        if nodes[i].Pos1 == "形容動詞語幹" {
-            ret = append(ret, "な")
-        } else if nodes[i].Pos1 == "一般" {
-            ret = append(ret, "の")
-        } else if nodes[i].Pos == "形容詞" {
-            ret[len(ret)-1] = nodes[i].Base
+            if nodes[i].Pos1 == "形容動詞語幹" {
+                ret = append(ret, "な")
+            } else if nodes[i].Pos1 == "一般" {
+                ret = append(ret, "の")
+            } else if nodes[i].Pos == "形容詞" {
+                ret[len(ret)-1] = nodes[i].Base
+            }
+            break
         }
-        break
     }
-}
 
-if len(ret) == 0 {
-    return "", "", errors.New("can not convert")
-}
+    if len(ret) == 0 {
+        return "", "", errors.New("can not convert")
+    }
 
-return strings.Join(ret, ""), strings.Join(ret[:len(ret)-1], ""), nil
+    return strings.Join(ret, ""), strings.Join(ret[:len(ret)-1], ""), nil
+}
 //}
-
-
-}
-```
-
 
 
 以下は簡単な文書で実行した例である
@@ -207,5 +209,8 @@ $ go run main.go -i 僕は友達が少ない
 //}
 
 
-ところどころ文書がおかしいうえに煽られている感じが出た。
+なんかそれっぽい文書が生成された。
+しかし、まだ不十分である。入力された文書がポジティブな発言の場合は問題にならないが、
+ネガティブな言葉を入力されると煽られている感じになる。
+サーバルちゃんは煽ってこないのだ。
 
