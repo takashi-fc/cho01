@@ -1,4 +1,4 @@
-TableViewを好きになってもScrollViewは嫌いにならないでください
+#TableViewを好きになってもScrollViewは嫌いにならないでください
 
 ## はじめに
 みなさんこんにちは。iOSアプリでスクロールする画面を作るとき、皆さんはどうやって作成しているでしょうか？TableViewControllerやPageViewControllerを使ってやられる方結構いると思います。TableViewControllerであれば複雑なレイアウトもセルごとに分割できるのでわかりやすくできますよね。
@@ -37,7 +37,7 @@ text1.text = "ねこねこねこねこねこねこねこねこねこねこね...
 
 こうするとどうなるかというと
 
-![ねこ２](https://github.com/omega999/sampleScrollVIew/blob/master/test/sampl1.png "サンプル")
+![ねこ２](https://github.com/omega999/sampleScrollVIew/blob/master/test/sample2.png "サンプル")
 
 こうなるんですが、このままでは **スクロールができません。**
 なぜかというとScrollViewに乗っているContentViewの高さが変動していないからです。ContentViewの高さを変動させContentSizeを変更させるために、以下の処理を追加します
