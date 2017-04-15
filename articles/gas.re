@@ -2,51 +2,50 @@
 = GoogleAppsScriptライブラリ開発
 
 
-みなさんGoogleAppsScript（以下、GAS）は使ったことがありますか？
+みなさんGoogleAppsScript@<fn>{1}（以下、GAS）は使ったことがありますか？
 GASは簡単に言うと、Googleのサーバ上でJavaScriptを実行できるサービスです。
-外部にAPIとして公開しPOST,GETのリクエストを受けたり、GoogleFusionTables（以下、FusionTables）やGoogleSpreadSheets（以下、SpreadSheets）でデータを保持することもできます。
-個人のアプリでもバックエンドにGASを利用していて、DBにSpreadSheetsを利用し、ライブラリ化した際に得られた知見と成果の内容です。
+外部にAPIとして公開しPOST,GETのリクエストを受けたり、Google Spreadsheets@<fn>{2}（以下、Spreadsheets）やGoogle FusionTables@<fn>{3}（以下、FusionTables）でデータを保持することもできます。
+個人のアプリでバックエンドにGASを利用していて、DBにSpreadsheetsを利用し、ライブラリを開発した際に得られた知見と成果の内容です。
 
 
 == きっかけとGoogleAppsScriptから利用するDBの選択
 
 
-結論から言うと、FusionTablesよりSpreadSheetsを利用することをオススメします。
-理由としては、FusionTablesがUPDATE, DELETEでWHERE句が利用できないからです。正確に言うと、ROW@<b>{IDというオートインクリメントされるカラムしか指定できません。
+結論から言うと、FusionTablesよりSpreadsheetsを利用することをオススメします。
+FusionTablesのメリットはGoogleMapとの連携やチャート化など@<strong>{データをビジュアル化しやすい}というところです。良さそうなのになぜ使わないのか、その理由としては、FusionTablesがSELECT句以外でWHERE句が利用できないことが大きいです。
+正確に言うと、ROW@<b>{IDというオートインクリメントされるカラムしか指定できません。
 削除したい対象をSELECTで抽出してから、ROW}IDを指定してDELETEすることは可能です。
 しかし、書き込みの上限が30件/分かつ5000件/日と厳しく、リクエストを送るクライアントが多いと現実的ではありません。
 
 
 
-そこでSpreadSheetsの出番です。SpreadSheetsをDBとして扱うメリットとしては「非エンジニアでも触れる」だと思います。例えば、
+Spreadsheetsメリットとしては@<strong>{非エンジニアでも触れる}だと思います。例えば、
 
  * ボタンやプッシュ通知のA/Bパターン文言
- * メールやチャットで利用するテンプレートメッセージ
+ * 動的なテンプレートメッセージ
 
 
 
-などを改善していく際に、エンジニアを介さず行えることが大きな利点です。
-そんな気軽に変更されてはたまらん！というデータはシートを分けておき、編集可能者を制限しておくと良いでしょう。それぞれに実行権限を付与できるのも利点です。
+などを文言やパターンを変更する際に、エンジニアを介さず変更を行うことができるます。
+そんな気軽に変更されてはたまらん！というデータはシートを分けておき、編集可能者を制限しておくと良いでしょう。
+それぞれに@<strong>{容易に変更できる環境でありながら実行権限を付与できる}こともメリットです。
 
 
 
-良いところしかないのかと言うとそうではなく、SpreadSheetsのAPIで提供されているメソッドでしか情報をやり取りすることができません。そして、そこにSQLの選択肢はなく、SQLを利用してデータを抽出することができません。
-そこで SpreadSheetsSQL というSpreadSheetsからSQLライクにデータを抽出できるGASのライブラリを公開しています。このライブラリなしでもSpreadSheetsをDBとして利用することはです。
+良いところしかないのかと言うとそうではありません。GASでSpreadsheetsを利用する際に使うSpreadsheet Service@<fn>{4}が提供しているメソッドでは、SQLを利用してデータを抽出することができません。
+そこで SpreadSheetsSQL@<fn>{5} というSpreadsheetsからSQLライクにデータを抽出できるGASのライブラリを公開しています。ライブラリを使うメリットとしては@<strong>{Spreadsheetsのセルを意識する必要がなくなる}というところにあります。
+もちろん、このライブラリなしでもDBとして利用することは可能です。
+常に固定のセルを取得するだけなら、直にSpreadsheet Serviceを利用した方が良いと思います。
 
 
-== ライブラリの開発
-
-//quote{
-SpreadSheetsSQL: https://github.com/roana0229/spreadsheets-sql
-
-//}
+== GASライブラリの開発
 
 
-GASのライブラリはGASで作ることができます。SpreadSheetsSQLのソースコードを例に説明します。
+GASライブラリはGASで作ることができます。SpreadsheetsSQLのソースコードを例に説明します。
 まず初めにこのライブラリを使う時は以下のように使います。
 
 
-//emlist[][サンプルコード]{
+//emlist[][javascript:サンプルコード.gs]{
 var result = SpreadSheetsSQL.open(SHEET_ID, SHEET_NAME).select(['name', 'cv']).result();
 
 // resultの内容
@@ -60,11 +59,11 @@ var result = SpreadSheetsSQL.open(SHEET_ID, SHEET_NAME).select(['name', 'cv']).r
 //}
 
 
-SpreadSheetsSQLを利用する際には、@<tt>{SpreadSheetsSQL.open()}を呼ぶ必要があります。
+SpreadsheetsSQLを利用する際には、@<tt>{SpreadSheetsSQL.open()}を呼ぶ必要があります。
 これは@<tt>{ライブラリのプロジェクト名.メソッド}という形になっていて
 
 
-//emlist[][SpreadSheetsSQL.gs]{
+//emlist[][javascript:SpreadSheetsSQL.gs]{
 /**
  * This method use to create SpreadSheetsSQL instance.
  * @param {String} id SpreadSheet id
@@ -77,18 +76,18 @@ function open(id, name) {
 //}
 
 
-コードではこのようになっています。コメントはJSDocで記述することができます。
+コードではこのようになっています。コメントはJSDoc@<fn>{6}で記述することができます。
 @<tt>{new SpreadSheetsSQL_(id, name)}で@<tt>{SpreadSheetsSQL_}というクラスをインスタンス化していることがわかると思います。
-また、末尾にアンダースコアがついていることにお気付きかと思います。これはスコープ制御をするためであり、ライブラリ内でのみ参照できるプライベートな状態になります。
+また、クラス名の末尾にアンダースコアがついていることにお気付きかと思います。これはスコープ制御をするためであり@<strong>{ライブラリ内でのみ参照できるプライベートな状態}になります。
 @<tt>{SpreadSheetsSQL.open()}した際の戻り値は@<tt>{SpreadSheetsSQL_}型ですが、JSDocにはアンダースコアなしで記述されています。
-実際にはプライベートクラスのインスタンスが返っているが、JSDocを見るとプロジェクト名の型のようなものが返るということです。
+実際にはプライベートクラスのインスタンスが返っているが、JSDocを見るとプロジェクト名のクラスが返るということです。
 
 
 
 次に取得するカラムの指定に@<tt>{SpreadSheetsSQL.open().select()}を呼ぶ必要があります。
 
 
-//emlist[][SpreadSheetsSQL.gs]{
+//emlist[][javascript:SpreadSheetsSQL.gs]{
 /**
  * This method use to get columns.
  * <pre><code>Example: SpreadSheetsSQL.open(id, name).select(['name', 'age', 'married', 'company']).result();
@@ -103,10 +102,10 @@ function select(selects) {
 
 
 コードではこのようになっています。@<tt>{result()}でも同様のコードが記述されています。
-呼び出されたら例外を投げるメソッドに見えます。しかし、ここで宣言されているメソッドはあくまでライブラリ外から参照するためのメソッドでしかありません。実態は
+呼び出されたら例外を投げるメソッドに見えます。しかし、ここで宣言されているメソッドはあくまで@<strong>{ライブラリ外から参照するためのメソッド}でしかありません。実態は
 
 
-//emlist[][SpreadSheetsSQL.gs]{
+//emlist[][javascript:SpreadSheetsSQL.gs]{
 class SpreadSheetsSQL_ {
   ...
   select(selects) {...}
@@ -127,7 +126,7 @@ class SpreadSheetsSQL_ {
  * 補完のためのインターフェースをルート階層に列挙し、JSDocの@returnにはライブラリ名を指定する。
 
 
-== ライブラリの公開
+== GASライブラリの公開
 
 
 開発もそこまで気をつけることはありませんでしたが、公開はもっと簡単です。
@@ -139,6 +138,7 @@ class SpreadSheetsSQL_ {
 
 
 たったこれだけで、他人がでライブラリとしてGASプロジェクトを扱うことができます。
+利用できるとは言ってもドキュメントが必要ですよね？実はJSDocを書いていれば、https://script.google.com/macros/library/d/スクリプトID/バージョン で見ることができます。公式がきちんとドキュメントまでサポート@<fn>{7}しているのはとても嬉しいことですね。
 
 
 == おまけ: ES6 + ローカルで開発する
@@ -146,27 +146,43 @@ class SpreadSheetsSQL_ {
 
 GASは個人でサーバを用意せず、気軽に開発できて便利です。
 ただ、オンラインエディタ上でしか書けないため、普段使いしている慣れた環境で開発することができません。
-そこでbabel + gulp + node-google-apps-script を使うことで、ES6かつローカルで開発しています。
+そこでBabel + gulp + node-google-apps-script を使うことで、ES6かつローカルで開発しています。
 
 
 
-ローカルのファイルをアップロードするための選択肢としていくつか方法がありますが、今回はGoogleDevelopersJapanで過去に紹介された node-google-apps-script (https://github.com/danthareja/node-google-apps-script) を利用します。セットアップはURL先に譲ります。
+ローカルのファイルをアップロードするための選択肢としていくつか方法がありますが、今回はGoogleDevelopersJapanで過去に紹介された node-google-apps-script@<fn>{8} を利用します。
+セットアップはURL先に譲ります。
 
 
 
 また、GASはES6に対応していないため、ES6で記述したJavaScriptをそのまま実行することはできません。
 そのため https://babeljs.io を利用して、実行可能なJavaScriptのコードに変換します。
-単純にbabelを利用して変換しても良いですが、コードを変更したら自動で変換+同期できるように、gulpを利用します。
+単純にBabelを利用して変換しても良いですが、コードを変更したら自動で変換+同期できるように、gulpを利用します。
 
- 1. @<tt>{npm install -g gulp && npm install --save-dev gulp gulp-babel babel-preset-es2015}
- 1. es6というディレクトリを作って、そこに@<tt>{コード.js}と同じ名前のファイルを作成
- 1. リスト1.1のgulpfile.jsというファイルを作成
- 1. @<tt>{gulp babel}と実行すると、src/コード.jsに変換されたJavaScriptが出力される
- 1. @<tt>{gapps upload}することでコード.jsが反映されます
- 1. @<tt>{gulp}と実行すると、監視状態になりes6のコードを変更したら、babelで変換し、アップロードまでを自動的に行います
+ 1. node-google-apps-scriptのセットアップ
+ 1. gulp + babelのインストール @<tt>{npm install -g gulp && npm install --save-dev gulp gulp-babel babel-preset-es2015}
+ 1. es6というディレクトリを作って、@<tt>{コード.js}を作成
+ 1. gulpfile.jsを作成
 
 
-//emlist[][gulpfile.js]{
+
+これで準備完了です。
+@<tt>{gulp babel}と実行すると、src/コード.jsに変換されたJavaScriptが出力され、@<tt>{gapps upload}することでコード.jsが反映されます。
+@<tt>{gulp}と実行すると、変更監視状態になりes6のコードを変更したら、Babelで変換し、アップロードまでを自動的に行います。
+
+
+//emlist[][ディレクトリ構成]{
+.
+├── gapps.config.json
+├── gulpfile.js
+├── node_modules
+├── es6
+│   └── コード.js
+└── src
+    └── コード.js
+//}
+
+//emlist[][javascript:gulpfile.js]{
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var spawn = require('child_process').spawn;
@@ -193,7 +209,7 @@ gulp.task('upload', () => {
 });
 //}
 
-//emlist[][es6のコード.js]{
+//emlist[][javascript:es6のコード.js]{
 class Bot {
   constructor(message) {
     this.message = message;
@@ -210,36 +226,6 @@ function main() {
 }
 //}
 
-//emlist[][babelによって変換されたコード.js]{
-"use strict";
-
-var _createClass = function () {...}();
-
-function _classCallCheck(instance, Constructor) {...}
-
-var Bot = function () {
-  function Bot(message) {
-    _classCallCheck(this, Bot);
-
-    this.message = message;
-  }
-
-  _createClass(Bot, [{
-    key: "say",
-    value: function say() {
-      Logger.log(this.message);
-    }
-  }]);
-
-  return Bot;
-}();
-
-function main() {
-  var bot = new Bot("ようこそ技術書典へ");
-  bot.say();
-}
-//}
-
 
 これでローカルかつES6で開発しながら、GASに実行可能な状態で同期することができました。
 
@@ -249,3 +235,19 @@ function main() {
 
 どうでしたか？GoogleAppsScriptが大きく目立つことがない中、更にそのライブラリを作るというニッチなところまとめてみました。GoogleAppsScriptはAPI+DBとしてだけではなく、cronのように定期的に処理を実行することも可能です。また、個人ではなかなかサーバ側に手が出せないという人や、ちょっとした便利ツールを作る時にとても便利だと思っています。
 
+
+//footnote[1][https://developers.google.com/apps-script]
+
+//footnote[2][https://docs.google.com/spreadsheets]
+
+//footnote[3][https://developers.google.com/fusiontables]
+
+//footnote[4][https://developers.google.com/apps-script/reference/spreadsheet/]
+
+//footnote[5][https://github.com/roana0229/spreadsheets-sql]
+
+//footnote[6][http://usejsdoc.org]
+
+//footnote[7][執筆時点2017/04/16時点ではCSSが読み込めない状態になっています。]
+
+//footnote[8][https://github.com/danthareja/node-google-apps-script]
