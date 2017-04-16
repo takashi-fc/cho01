@@ -1,7 +1,7 @@
 
 = フレンズ語翻訳機を実装する
 
-== フレンズ語とはどんなものか
+== フレンズ語とは
 
 
 フレンズが喋ってる独特の言い回しの言葉である。
@@ -33,7 +33,7 @@
 というわけでまずは簡単なテンプレートを作ってフレンズ語を生成してみようではないか。
 
 
-== フレンズのテンプレートの生成手法
+=== フレンズのテンプレートの生成手法
 
 
 ここで使用するものは今話題の深層学習などではない。
@@ -85,6 +85,11 @@ $ echo "私は歌うのが好きだ" | cabocha
 
 
 一番一のチャンクを無視すれば主語をなくせそうである。
+
+
+== 実際に実装する
+
+
 Go言語で書くとこのようになる。
 ちなみに自然言語処理をGoで書くのは珍しいかもしれないが私はGopherなのでGo言語を使う。
 皆さんは好きな言語を使って実装すれば良いと思う。
@@ -133,8 +138,6 @@ $ echo 私は歌うのが好きだ | mecab
 が 助詞,格助詞,一般,*,*,*,が,ガ,ガ
 好き  名詞,形容動詞語幹,*,*,*,*,好き,スキ,スキ
 だ 助動詞,*,*,*,特殊・ダ,基本形,だ,ダ,ダ
-EOS
-zuikaku:friends-transl
 //}
 
 
@@ -252,7 +255,7 @@ $ echo "私は歌うのが好き" | mecab
 これによって文書がポジティブであることを判定できる。
 
 
-=== 実際の実装
+=== 実装
 
 //emlist{
 type NPElem struct {
@@ -310,4 +313,204 @@ $ go run main.go -i 私は歌が好き
 
 go run main.go -i 僕は運動が苦手だ
 だいじょーぶ。フレンズには得意不得意があるからー。
+
+$ go run main.go -i スホーイは空を飛ぶ
+すごーい。君は空のフレンズなんだね。
 //}
+
+=== この手法の問題
+
+
+辞書に載っていない単語がやってきた時対応しづらい。@<br>{}
+また、ネガティブな単語とポジティブな単語が同じバランスで入っている時きれいに判定ができない。
+
+
+== さらなる精度を求めるための改良
+
+
+ベイズ分類器を利用してネガポジを振り分ける。
+ベイズ分類器について詳細に書くとページ数の関係で辛いことになりそうなのでこのあたりの記事を見ると良さそうです。
+
+
+
+@<href>{http://qiita.com/aflc/items/13fe52243c35d3b678b0,ナイーブベイズ分類器を頑張って丁寧に解説してみる - Qiita}
+
+
+
+なにに使われている技術かと言うと迷惑メールのフィルタとかに使われている技術です。
+迷惑メールの場合は迷惑メールである、迷惑メールでないを判定しますがここではポジティブな文書である、ネガティブな文書である、どちらでもないを判定します。
+Go言語で実現するためには @<tt>{github.com/jbrukh/bayesian} というパッケージを利用するとよいです。
+
+
+=== 実装
+
+
+まずClassと分類器を定義します。
+
+
+//emlist{
+// classの定義
+const (
+    P bayesian.Class = "Posi"
+    N bayesian.Class = "Nega"
+    E bayesian.Class = "Neither"
+)
+
+// 分類器を定義した構造体
+type classifier struct {
+    PN *bayesian.Classifier
+    NE *bayesian.Classifier
+    EP *bayesian.Classifier
+}
+
+// 分類器を初期化する
+func newClassifier() *classifier {
+    return &classifier{
+        bayesian.NewClassifier(P, N), 
+        bayesian.NewClassifier(N, E), 
+        bayesian.NewClassifier(E, P), 
+    }   
+}
+//}
+
+
+判定関数を実装する
+ベイズ分類器は分かち書きを作って食わせて上げる必要があるのでmecabを使って分かち書きをつくる。
+PN, NE, EP判定機に分かち書きにした文書を入力するとscoreが取得できるのでP, N, Eをそれぞれ集計する。
+一番0に近いものを結果として出力する。
+
+
+//emlist{
+func (c *classifier) DeliberationNP(s string) bayesian.Class {
+    var doc = []string{}
+    var (
+        PScore = float64(1.0)
+        NScore = float64(1.0)
+        EScore = float64(1.0)
+    )
+    nodes, err := mecab.Parse(s)
+    if err != nil {
+        return ""
+    }
+
+    for _, node := range nodes {
+        doc = append(doc, node.Base)
+    }
+
+    pnScores, _, pnb := c.PN.LogScores(doc)
+    if pnb {
+        PScore = PScore * (-1 * pnScores[0])
+        NScore = NScore * (-1 * pnScores[1])
+    }
+    niScores, _, nib := c.NE.LogScores(doc)
+    if nib {
+        NScore = NScore * (-1 * niScores[0])
+        EScore = EScore * (-1 * niScores[1])
+    }
+    ipScores, _, ipb := c.EP.LogScores(doc)
+    if ipb {
+        EScore = EScore * (-1 * ipScores[0])
+        PScore = PScore * (-1 * ipScores[1])
+    }
+
+    if PScore < NScore {
+        if PScore < EScore {
+            return P
+        }
+    } else {
+        if NScore < EScore {
+            return N
+        }
+    }
+    return E
+}
+//}
+
+
+学習関数は以下のようにする
+
+
+//emlist{
+func learn(s string, which bayesian.Class, c *classifier) *classifier {
+    var doc = []string{}
+    nodes, err := mecab.Parse(s)
+    if err != nil {
+        return c
+    }
+
+    for _, node := range nodes {
+        doc = append(doc, node.Base)
+    }
+    c.Learn(doc, which)
+    return c
+}
+
+func (c *classifier) Learn(document []string, which bayesian.Class) {
+    if which == P {
+        c.PN.Learn(document, which)
+        c.EP.Learn(document, which)
+    } else if which == N {
+        c.NE.Learn(document, which)
+        c.PN.Learn(document, which)
+    } else if which == E {
+        c.EP.Learn(document, which)
+        c.NE.Learn(document, which)
+    }
+}
+//}
+
+
+分類器を３つに分割することで全ての学習データが揃わなくても分類することができる。
+
+
+=== 実行する
+
+//emlist{
+$ go run nb/main.go -i 今日は凍え死にそうだ
+Nega
+
+$ go run nb/main.go -i あなたは何もできないフレンズなのね
+Nega
+
+$ go run nb/main.go -i 残業辛い
+Nega
+
+$ go run nb/main.go -i かばんちゃんはすっごいんだよ！
+Posi
+
+$ go run nb/main.go -i 当たり前じゃない！かばんちゃんを助けて、また色んなところ行くんだから！
+Posi
+
+$ go run nb/main.go -i スホーイは空をとぶのが好きなフレンズなんだね。
+Posi
+
+$ go run nb/main.go -i 食べないよ！
+Nega
+
+$ go run nb/main.go -i いきるのがつらい
+Nega
+//}
+
+== さいごに
+
+
+今回はテンプレートに単語を埋め込んでフレンズ語を生成しました。
+文書のタグ付け技術とか深層学習をつかってフレンズ語を生成できると面白いなと思っています。
+もし第二弾がかけるようであれば作ってみたいなと思っています。
+
+
+== 参考文献
+ * @<href>{http://qiita.com/aflc/items/13fe52243c35d3b678b0,ナイーブベイズ分類器を頑張って丁寧に解説してみる - Qiita}
+ * @<href>{http://qiita.com/moroku0519/items/e6352d31311418f38227,ネガポジ判定を行うGem作ってみた - Qiita}
+ * @<href>{http://www.cl.ecei.tohoku.ac.jp/index.php?Open%20Resources%2FJapanese%20Sentiment%20Polarity%20Dictionary,日本語評価極性辞書 - 乾・岡崎研究室 - Tohoku University}
+
+
+== 使用ライブラリ
+ * @<href>{https://github.com/ledyba/go-cabocha,github.com/ledyba/go-cabocha}
+ * @<href>{https://github.com/yukihir0/mecab-go,github.com/yukihir0/mecab-go}
+ * @<href>{https://github.com/jbrukh/bayesian,github.com/jbrukh/bayesian}
+
+
+== つくったもの
+ * @<href>{https://github.com/ieee0824/friends-translator,https://github.com/ieee0824/friends-translator}
+

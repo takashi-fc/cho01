@@ -5,6 +5,7 @@ CHAPS:
   - orm.re
   - masao.re
   - friends-translator.re
+  - mysql-graph.re
 
 APPENDIX:
 
