@@ -5,22 +5,23 @@
 みなさんGoogleAppsScript@<fn>{1}（以下、GAS）は使ったことがありますか？
 GASは簡単に言うと、Googleのサーバ上でJavaScriptを実行できるサービスです。
 外部にAPIとして公開しPOST,GETのリクエストを受けたり、Google Spreadsheets@<fn>{2}（以下、Spreadsheets）やGoogle FusionTables@<fn>{3}（以下、FusionTables）でデータを保持することもできます。
-個人のアプリでバックエンドにGASを利用していて、DBにSpreadsheetsを利用し、ライブラリを開発した際に得られた知見と成果の内容です。
+個人のアプリでバックエンドにGASを利用していて、ライブラリを開発した際に得られた知見と成果の内容です。
 
 
-== きっかけとGoogleAppsScriptから利用するDBの選択
+== GASライブラリちほーに来たきっかけ
 
-
-結論から言うと、FusionTablesよりSpreadsheetsを利用することをオススメします。
+GASでRSSから記事を収集し、カテゴリなどで分けて適切なタイミングで更新しアプリから参照したいという機会がありました。
+収集した記事を溜めておくにはDBが必要です。そこで、GASから利用するDBの選択肢としてはFusionTables、Spreadsheetsの2つがあります。
 FusionTablesのメリットはGoogleMapとの連携やチャート化など@<strong>{データをビジュアル化しやすい}というところです。良さそうなのになぜ使わないのか、その理由としては、FusionTablesがSELECT句以外でWHERE句が利用できないことが大きいです。
-正確に言うと、ROW@<b>{IDというオートインクリメントされるカラムしか指定できません。
-削除したい対象をSELECTで抽出してから、ROW}IDを指定してDELETEすることは可能です。
+正確に言うと、ROW_IDというオートインクリメントされるカラムしか指定できません。
+削除したい対象をSELECTで抽出してから、ROW_IDを指定してDELETEすることは可能です。
 しかし、書き込みの上限が30件/分かつ5000件/日と厳しく、リクエストを送るクライアントが多いと現実的ではありません。
 
 
 
-Spreadsheetsメリットとしては@<strong>{非エンジニアでも触れる}だと思います。例えば、
+Spreadsheetsのメリットは@<strong>{非エンジニアでも触れる}だと思います。例えば、
 
+ * アプリをアップデートせずに特定の設定値を更新
  * ボタンやプッシュ通知のA/Bパターン文言
  * 動的なテンプレートメッセージ
 
@@ -34,19 +35,20 @@ Spreadsheetsメリットとしては@<strong>{非エンジニアでも触れる}
 
 良いところしかないのかと言うとそうではありません。GASでSpreadsheetsを利用する際に使うSpreadsheet Service@<fn>{4}が提供しているメソッドでは、SQLを利用してデータを抽出することができません。
 そこで SpreadSheetsSQL@<fn>{5} というSpreadsheetsからSQLライクにデータを抽出できるGASのライブラリを公開しています。ライブラリを使うメリットとしては@<strong>{Spreadsheetsのセルを意識する必要がなくなる}というところにあります。
-もちろん、このライブラリなしでもDBとして利用することは可能です。
-常に固定のセルを取得するだけなら、直にSpreadsheet Serviceを利用した方が良いと思います。
+もちろん、このライブラリなしでもDBとして利用することは可能です。固定のセルを取得するだけなら、直にSpreadsheet Serviceを利用した方が良いと思います。
 
 
-== GASライブラリの開発
+== つくってみる
 
 
 GASライブラリはGASで作ることができます。SpreadsheetsSQLのソースコードを例に説明します。
 まず初めにこのライブラリを使う時は以下のように使います。
 
 
-//emlist[][javascript:サンプルコード.gs]{
-var result = SpreadSheetsSQL.open(SHEET_ID, SHEET_NAME).select(['name', 'cv']).result();
+//list[SpreadSheetsSQL サンプルコード][SpreadSheetsSQL サンプルコード]{
+var result = SpreadSheetsSQL.open(SHEET_ID, SHEET_NAME)
+                            .select(['name', 'cv'])
+                            .result();
 
 // resultの内容
 [{
@@ -63,7 +65,7 @@ SpreadsheetsSQLを利用する際には、@<tt>{SpreadSheetsSQL.open()}を呼ぶ
 これは@<tt>{ライブラリのプロジェクト名.メソッド}という形になっていて
 
 
-//emlist[][javascript:SpreadSheetsSQL.gs]{
+//list[SpreadSheetsSQL openメソッド][SpreadSheetsSQL.openメソッド]{
 /**
  * This method use to create SpreadSheetsSQL instance.
  * @param {String} id SpreadSheet id
@@ -87,10 +89,13 @@ function open(id, name) {
 次に取得するカラムの指定に@<tt>{SpreadSheetsSQL.open().select()}を呼ぶ必要があります。
 
 
-//emlist[][javascript:SpreadSheetsSQL.gs]{
+//list[SpreadSheetsSQL selectメソッド][SpreadSheetsSQL.selectメソッド]{
 /**
  * This method use to get columns.
- * <pre><code>Example: SpreadSheetsSQL.open(id, name).select(['name', 'age', 'married', 'company']).result();
+ * <pre><code>Example:
+ * SpreadSheetsSQL.open(id, name)
+ *                .select(['name', 'age', 'married', 'company'])
+ *                .result();
  * </pre></code>
  * @param {String[]} selects column array
  * @return {SpreadSheetsSQL} SpreadSheetsSQL instance
@@ -102,19 +107,22 @@ function select(selects) {
 
 
 コードではこのようになっています。@<tt>{result()}でも同様のコードが記述されています。
-呼び出されたら例外を投げるメソッドに見えます。しかし、ここで宣言されているメソッドはあくまで@<strong>{ライブラリ外から参照するためのメソッド}でしかありません。実態は
+@<list>{SpreadSheetsSQL selectメソッド}だけを見ると呼び出されたら例外を投げるメソッドに見えます。しかし、ここで宣言されているメソッドはあくまで@<strong>{ライブラリ外から参照するためのメソッド}でしかありません。
 
 
-//emlist[][javascript:SpreadSheetsSQL.gs]{
+//list[SpreadSheetsSQL selectメソッドの実態][SpreadSheetsSQL.selectメソッドの実態]{
 class SpreadSheetsSQL_ {
   ...
-  select(selects) {...}
+  select(selects) {
+    // カラムを絞る処理
+    return this;
+  }
   ...
 }
 //}
 
 
-のように@<tt>{SpreadSheetsSQL_}クラス内に記述されています。通常ではプライベートなクラスのメソッドは外からは見えず呼び出すことができません。メソッドが見えないということは呼び出すことができないということになっていまします。
+実態は@<list>{SpreadSheetsSQL selectメソッドの実態}のように@<tt>{SpreadSheetsSQL_}クラス内に記述されています。通常ではプライベートなクラスのメソッドは外からは見えず呼び出すことができません。メソッドが見えないということは呼び出すことができないということになっていまします。
 そのため、ライブラリのライブラリのルート階層にインターフェースとして記述し、プライベートなメソッドでもGASのオンラインエディタでの補完を有効にしています。
 
 
@@ -123,10 +131,10 @@ class SpreadSheetsSQL_ {
 
  * プロジェクト名.メソッドという形で呼び出すことができる。
  * 末尾にアンダースコアでライブラリ外からは見えないようにする。
- * 補完のためのインターフェースをルート階層に列挙し、JSDocの@returnにはライブラリ名を指定する。
+ * 補完のためのインターフェースをルート階層に列挙し、JSDocの@returnには実際の型ではなく認識させたい型（今回であればライブラリ名）を指定する。
 
 
-== GASライブラリの公開
+== みんなに公開する
 
 
 開発もそこまで気をつけることはありませんでしたが、公開はもっと簡単です。
@@ -160,18 +168,18 @@ GASは個人でサーバを用意せず、気軽に開発できて便利です�
 単純にBabelを利用して変換しても良いですが、コードを変更したら自動で変換+同期できるように、gulpを利用します。
 
  1. node-google-apps-scriptのセットアップ
- 1. gulp + babelのインストール @<tt>{npm install -g gulp && npm install --save-dev gulp gulp-babel babel-preset-es2015}
- 1. es6というディレクトリを作って、@<tt>{コード.js}を作成
- 1. gulpfile.jsを作成
+ 2. gulp + babelのインストール@<br>{}@<tt>{npm install -g gulp && npm install --save-dev gulp gulp-babel babel-preset-es2015}
+ 3. es6というディレクトリを作って、@<tt>{コード.js}を作成
+ 4. gulpfile.jsを作成
 
 
 
 これで準備完了です。
-@<tt>{gulp babel}と実行すると、src/コード.jsに変換されたJavaScriptが出力され、@<tt>{gapps upload}することでコード.jsが反映されます。
-@<tt>{gulp}と実行すると、変更監視状態になりes6のコードを変更したら、Babelで変換し、アップロードまでを自動的に行います。
+@<tt>{gulp babel}と実行すると、ES6で記述した@<tt>{es6/コード.js}がBabelを適応した状態で@<tt>{src/コード.js}に変換され、@<tt>{gapps upload}することでコード.jsが反映されます。
+@<tt>{gulp}と実行すると、変更監視状態になりes6のコードを変更したら、Babelで変換し、アップロードまでを自動的に行います。変更を検知できるのはgulpの良いところです。
 
 
-//emlist[][ディレクトリ構成]{
+//list[ディレクトリ構成][ディレクトリ構成]{
 .
 ├── gapps.config.json
 ├── gulpfile.js
@@ -182,7 +190,8 @@ GASは個人でサーバを用意せず、気軽に開発できて便利です�
     └── コード.js
 //}
 
-//emlist[][javascript:gulpfile.js]{
+
+//list[gulpfile.js][gulpfile.js]{
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var spawn = require('child_process').spawn;
@@ -209,23 +218,6 @@ gulp.task('upload', () => {
 });
 //}
 
-//emlist[][javascript:es6のコード.js]{
-class Bot {
-  constructor(message) {
-    this.message = message;
-  }
-
-  say() {
-    Logger.log(this.message);
-  }
-}
-
-function main() {
-  var bot = new Bot("ようこそ技術書典へ");
-  bot.say();
-}
-//}
-
 
 これでローカルかつES6で開発しながら、GASに実行可能な状態で同期することができました。
 
@@ -233,7 +225,7 @@ function main() {
 == さいごに
 
 
-どうでしたか？GoogleAppsScriptが大きく目立つことがない中、更にそのライブラリを作るというニッチなところまとめてみました。GoogleAppsScriptはAPI+DBとしてだけではなく、cronのように定期的に処理を実行することも可能です。また、個人ではなかなかサーバ側に手が出せないという人や、ちょっとした便利ツールを作る時にとても便利だと思っています。
+どうでしたか？GoogleAppsScriptが大きく目立つことがない中、更にそのライブラリを作るというニッチなところまとめてみました。Google AppsScript + Google SpreadsheetsをAPI + DBとして使えば、バックエンドとして利用することができます。またクライアントとのやり取りだけではなく、cronのように定期的に処理を実行することも可能です。個人ではなかなかサーバ側に手が出せないという人や、ちょっとした便利ツールを作る時にとても便利だと思います。これを機に、もっとGoogle AppsScriptを使う人が増え便利なライブラリも増えるといいなあと思っています。@<br>{}J( 'ー`)し < 良いGoogle AppsScriptライフを！
 
 
 //footnote[1][https://developers.google.com/apps-script]
