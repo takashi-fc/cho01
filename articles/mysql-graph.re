@@ -48,7 +48,9 @@ MySQLに制御構文はありませんが、SELECT句によるレコード一件
 
 
 説明用に以下のようなテーブルを用意しました。
-@<tt>{
+
+
+//emlist{
 mysql> SELECT * FROM random_nums;
 +-------+
 | num   |
@@ -65,7 +67,9 @@ mysql> SELECT * FROM random_nums;
 |   114 |
 +-------+
 10 rows in set (0.00 sec)
-}
+//}
+
+
 連番を生成しつつ、ランダムな整数を小さい順に並べたいと思います。
 
 
@@ -84,7 +88,9 @@ ORDER BY
 
 
 結果は以下のようになります。
-@<tt>{
+
+
+//emlist{
 +-----------+-------+
 | increment | num   |
 +-----------+-------+
@@ -100,8 +106,7 @@ ORDER BY
 |        10 | 79879 |
 +-----------+-------+
 10 rows in set (0.00 sec)
-}
-
+//}
 
 
 連番を生成することができました。@<br>{}
@@ -293,7 +298,9 @@ mysql> SELECT
 
 先ほどの座標平面の各(x, y)について、描画するvalueを割り当てていきます。@<br>{}
 クエリは以下のようになりました。
-@<tt>{
+
+
+//emlist{
 SELECT
   GROUP_CONCAT(
     value
@@ -356,8 +363,7 @@ FROM (
 ) AS cel_size
 GROUP BY yy_axis
 ;
-}
-
+//}
 
 
 実行した結果は以下の通りです。
