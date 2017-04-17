@@ -1,6 +1,8 @@
 
 = PHPのORマッパーを調べてみた 2017
 
+== ぴーえっちぴーちほーで元気に暮らす老害おじちゃん！
+
 
 こんにちは。 @boscoworks です。普段は目黒あたりでPHPエンジニアをやっています。@<br>{}
 最近はRuby on RailsでのWeb開発が主流になってきましたね。仕事柄、社外のエンジニアの方ともよくお会いするのですが、Railsをやっているエンジニアはとても多い印象です。@<br>{}
@@ -57,8 +59,6 @@
 
 
 === Googleトレンドによる人気度の動向調査
- * https://trends.google.co.jp/trends/explore?q=propel%20php,doctrine%20php,eloquent%20php,idiorm%20php
-
 
 
 //image[boscoworks_trend1][ORM動向]{
@@ -133,11 +133,61 @@ Idiorm	194,306
 Idiorm は composer install はされてるのに GitHub では下火なのが印象的。興味本位でインストールして、そのままバイバイなケースが多いのかな。  
 
 
-== 結局
+== 閑話休題
+
+=== FuelPHP のORマッパーについて一言言わせてほしいんだ
 
 
-わかってたけど、それが数字としてはっきり出た感じはしますね。時代は Laravel 。@<br>{}
+最近、完全に私の好みで FuelPHP でプロダクトコードを書いているのですが、ORマッパーが微妙だなーと思うのは私だけでしょうか・・・。@<br>{}
+チェーンメソッドでクエリを構築できるのは直感的に書けて良いのですが、
+
+ * SELECTクエリの結果をデフォルトでメモリにキャッシュしちゃう
+ * モデルクラスが oil コマンドで強制上書きなので、DDLに弱い (ただし工夫すれば回避できる)
+ * アンダーバー区切りでディレクトリを切る仕組みなので、N対Nなテーブルの中間テーブルはいびつなモデル名になる
+ * Model_Crud とクエリビルダが共存することができる。どっちかに寄せないとすぐキメラになる
+
+
+
+みたいな感じで、ちょっと癖のある子になっています。  
+
+
+=== FuelPHP のモデルキャッシュを削除する方法
+
+
+Model@<b>{Crud のキャッシュをクリアするには、\Orm\Model の $}cached_objects を初期化してあげる必要があります。  
+
+
+//emlist[][php]{
+class Model_Article extends \Orm\Model
+{
+    public static cc()
+    {
+        static::$_cached_objects[get_called_class()] = [];
+    }
+}
+//}
+
+
+クエリビルダのほうは @<tt>{delete()} なるメソッドがあるのでそれを使います。  
+
+
+//emlist[][php]{
+$query = DB::query("SELECT * FROM articles")
+            ->cached($cacheTtl, "articles.all", false)->execute();
+Cache::delete("articles.all");
+//}
+
+
+「DDL発行が頻繁に起きるDBに対してのバッチ用途」で FuelPHP のモデル作成は結構運用コストがかかっています。@<br>{}
+裏を返せば、「そんなにDDL発行が発生しないWebアプリケーションもしくはREST API用途」であれば、FuelPHP のORマッパーは結構優秀なのかな。  
+
+
+== まとめ
+
+
+最後は FuelPHP のORマッパーについての(超個人的な)愚痴でしたが、PHPのORマッパーについて時代の潮流を垣間見ることができたように思います。数字としてはっきり出た感じはしますね。時代は Laravel 。@<br>{}
 Ruby 界隈で Rails が覇道を行くように、いまは PHP on Laravel 。@<br>{}
 Laravel を使うならORマッパーは Eloquent を自然に使うべきだし、 Laravel を選べないなら Doctrine 。@<br>{}
-10年くらい前の PHP 界隈では Propel VS Doctrine だった気もするけどなぁ。時代は流れ行くものです。こうして老害になっていくのだ。  
+10年くらい前の PHP 界隈では Propel VS Doctrine だった気もするけど。たぶん10年後くらいには「昔 Laravel っていうフレームワークがあってだな」って言っているんでしょうね。@<br>{}
+さて、冒頭でも少し言いましたが、最近周りが Railsエンジニアばかりなので、「いやいや時代はPHPでしょ」みたいな気骨のあるPHPエンジニアな友達が欲しいです。そろそろコミュニティに参加したり、何某かのコミッターにでもならないといけないかなぁ。
 
