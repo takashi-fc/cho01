@@ -19,7 +19,7 @@ frameは他のオブジェクトも持つプロパティで、オブジェクト
 
 
 
-//image[=200x100,][frameとcontentSize]{
+//image[=200x100][frameとcontentSize]{
 //}
 
 
@@ -111,10 +111,10 @@ Scrollable content size is ambiguous for "Scroll View"
 
 
 
-//image[=200x100,][scrollView_AutLayoutの設定]{
+//image[=200x100][scrollView_AutLayoutの設定]{
 //}
 
-//image[=200x100,][contentView_AutLayoutの設定]{
+//image[=200x100][contentView_AutLayoutの設定]{
 //}
 
 
@@ -150,4 +150,3 @@ EndouMari/TabPageViewController
 複雑なデザインを構成するとき、追加で表示させるパーツや高さ調整がややこしくなったりしてしまいますね。こういうときはTableViewを使ってセル単位でデザインを使用した方が扱いやすいですね。
 そういった点からScrollViewはシンプルな画面のスクロールで使うぶんには良いかなと思います。常にViewをシンプルなものにできれば良いですが...。
 ただ、今回はScrollViewwをおさらいしたのでもう基本は大丈夫ですね。みなさんScrollViewを嫌わずに使ってみましょう！
-
