@@ -23,11 +23,11 @@ language: ja
 
 # 書名
 # 読みを入れる例 booktitle: {name: "Re:VIEW EPUBサンプル", file-as: "リビューイーパブサンプル"}
-booktitle: いろんなちほーが混ざった本
+booktitle: 　いろんなちほーがまざったほん　開発がとくいなフレンズになる方法 - テーマは十人十色! -
 
 # 著者名。「, 」で区切って複数指定できる
 # 読みを入れる例 aut: [{name: "青木峰郎", file-as: "アオキミネロウ"}, {name: "武藤健志", file-as: "ムトウケンシ"}, {name: "高橋征義", file-as: "タカハシマサヨシ"}, {name: "角征典", file-as: "カドマサノリ"}]
-aut: ["roana0229"]
+aut: ["たかしファンクラブ"]
 
 # 以下はオプション
 # 以下はオプション(autと同じように配列書式で複数指定可能)。
@@ -48,8 +48,9 @@ aut: ["roana0229"]
 # a-cmm, cmm: 解釈・分析・考察者
 # a-dsr, dsr: デザイナ
 # a-edt, edt: 編集者
-edt: ["roana0229"]
+edt: ["@roana0229", "@onunu"]
 # a-ill, ill: イラストレータ
+ill: ["@onunu"]
 # a-lyr, lyr: 歌詞作成者
 # a-mdc, mdc: メタデータセットの一次的責任者
 # a-mus, mus: 音楽家

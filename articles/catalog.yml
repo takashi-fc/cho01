@@ -3,8 +3,10 @@ PREDEF:
 CHAPS:
   - gas.re
   - orm.re
+  - masao.re
+  - friends-translator.re
+  - mysql-graph.re
 
 APPENDIX:
 
 POSTDEF:
-  - contributors.re
