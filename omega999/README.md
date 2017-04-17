@@ -11,17 +11,15 @@ ScrollViewは二つのsizeを持っています。
 たとえながら説明すると、一つは窓枠の役割を担うframe、もう一つは景色の役割を担うcontentSizeです。
 frameは他のオブジェクトも持つプロパティで、オブジェクトの見た目の大きさです。contentSizeは表示コンテンツの大きさを示すもので、ScrollViewの上に乗っているViewの大きさになります。frameという窓から見える景色の大きさがcontentSizeと覚えるとわかりやすいですね。大きは横・縦どちらの方向にもcontentSizeとして設定できるので横・縦どちらのスクロールも設定次第でできます。
 
-![frameとcontentSize]( =200x100, "サンプル")
-
 ## 使ってみてわかるもどかしさ
 以下のコードでは二つの画像に挟まれたtextViewを用意しています。
-![ねこ](https://github.com/omega999/sampleScrollVIew/blob/master/test/sampl1.png =200x100"サンプル")
+![ねこ](images/sampl1.png, "サンプル")
 
 ```:サンプル1
 @IBOutlet weak var text1: UILabel!
 
 override func viewDidLoad() {
-  super.viewDidLoad()
+    super.viewDidLoad()
     text1.translatesAutoresizingMaskIntoConstraints = true
     text1.text = "ねこ"
     text1.sizeToFit()
@@ -36,7 +34,7 @@ text1.text = "ねこねこねこねこねこねこねこねこねこねこね...
 
 こうするとどうなるかというと
 
-![ねこ２](https://github.com/omega999/sampleScrollVIew/blob/master/test/sample2.png =200x100"サンプル")
+![ねこ２](images/sample2.png, "サンプル")
 
 こうなるんですが、このままでは **スクロールができません。**
 なぜかというとScrollViewに乗っているContentViewの高さが変動していないからです。ContentViewの高さを変動させContentSizeを変更させるために、以下の処理を追加します
@@ -76,8 +74,11 @@ Scrollable content size is ambiguous for "Scroll View"
 * ScrollViewのwidth・heightを設定
 * ContentViewを配置
 
-![scrollView_AutLayoutの設定]( =200x100, "サンプル")
-![contentView_AutLayoutの設定]( =200x100, "サンプル")
+ScrollViewの制約は以下のようになります。
+![scrollView_AutLayoutの設定](images/scroll_design.png, "サンプル")
+
+ContentViewの制約は以下のようになります。
+![contentView_AutLayoutの設定](images/content_design.png, "サンプル")
 
 ScronnViewのwidth・heightが決まらないとContentViewをおいてもエラーが出てしまうので気を付けましょう。
 
@@ -102,5 +103,4 @@ EndouMari/TabPageViewController
 複雑なデザインを構成するとき、追加で表示させるパーツや高さ調整がややこしくなったりしてしまいますね。こういうときはTableViewを使ってセル単位でデザインを使用した方が扱いやすいですね。
 そういった点からScrollViewはシンプルな画面のスクロールで使うぶんには良いかなと思います。常にViewをシンプルなものにできれば良いですが...。
 ただ、今回はScrollViewwをおさらいしたのでもう基本は大丈夫ですね。みなさんScrollViewを嫌わずに使ってみましょう！
-
 
