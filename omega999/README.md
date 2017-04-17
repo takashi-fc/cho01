@@ -82,9 +82,6 @@ ContentViewの制約は以下のようになります。
 
 ScronnViewのwidth・heightが決まらないとContentViewをおいてもエラーが出てしまうので気を付けましょう。
 
-## ScrollViewで無限スクロール
-
-
 ## ページ単位のスクロール
 ちなみにScrollViewに画面ごとのViewを配置して複数画面をスクロールできるように設定することもできますが、ページ単位のスクロールであればUIPageViewControllerを使うと良いかもしれません。ページ単位のViewをまとめて管理してくれます。
 
