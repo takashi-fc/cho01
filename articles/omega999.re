@@ -18,12 +18,6 @@ ScrollViewは二つのsizeを持っています。
 frameは他のオブジェクトも持つプロパティで、オブジェクトの見た目の大きさです。contentSizeは表示コンテンツの大きさを示すもので、ScrollViewの上に乗っているViewの大きさになります。frameという窓から見える景色の大きさがcontentSizeと覚えるとわかりやすいですね。大きは横・縦どちらの方向にもcontentSizeとして設定できるので横・縦どちらのスクロールも設定次第でできます。
 
 
-
-//image[=200x100][frameとcontentSize]{
-//}
-
-
-
 == 使ってみてわかるもどかしさ
 
 
@@ -37,7 +31,7 @@ frameは他のオブジェクトも持つプロパティで、オブジェクト
 @IBOutlet weak var text1: UILabel!
 
 override func viewDidLoad() {
-  super.viewDidLoad()
+    super.viewDidLoad()
     text1.translatesAutoresizingMaskIntoConstraints = true
     text1.text = "ねこ"
     text1.sizeToFit()
@@ -111,10 +105,15 @@ Scrollable content size is ambiguous for "Scroll View"
 
 
 
-//image[=200x100][scrollView_AutLayoutの設定]{
+ScrollViewの制約は以下のようになります。
+//image[scroll_design][scrollView_AutLayoutの設定]{
 //}
 
-//image[=200x100][contentView_AutLayoutの設定]{
+
+
+
+ContentViewの制約は以下のようになります。
+//image[content_design][contentView_AutLayoutの設定]{
 //}
 
 
@@ -122,8 +121,6 @@ Scrollable content size is ambiguous for "Scroll View"
 
 ScronnViewのwidth・heightが決まらないとContentViewをおいてもエラーが出てしまうので気を付けましょう。
 
-
-== ScrollViewで無限スクロール
 
 == ページ単位のスクロール
 
@@ -150,3 +147,4 @@ EndouMari/TabPageViewController
 複雑なデザインを構成するとき、追加で表示させるパーツや高さ調整がややこしくなったりしてしまいますね。こういうときはTableViewを使ってセル単位でデザインを使用した方が扱いやすいですね。
 そういった点からScrollViewはシンプルな画面のスクロールで使うぶんには良いかなと思います。常にViewをシンプルなものにできれば良いですが...。
 ただ、今回はScrollViewwをおさらいしたのでもう基本は大丈夫ですね。みなさんScrollViewを嫌わずに使ってみましょう！
+
