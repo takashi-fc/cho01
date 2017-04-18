@@ -2,9 +2,9 @@
 = GoogleAppsScriptライブラリ開発
 
 
-みなさんGoogleAppsScript（以下、GAS）は使ったことがありますか？
+みなさんGoogleAppsScript@<fn>{1}（以下、GAS）は使ったことがありますか？
 GASは簡単に言うと、Googleのサーバ上でJavaScriptを実行できるサービスです。
-外部にAPIとして公開しPOST,GETのリクエストを受けたり、Google Spreadsheets（以下、Spreadsheets）やGoogle FusionTables（以下、FusionTables）でデータを保持することもできます。
+外部にAPIとして公開しPOST,GETのリクエストを受けたり、Google Spreadsheets@<fn>{2}（以下、Spreadsheets）やGoogle FusionTables@<fn>{3}（以下、FusionTables）でデータを保持することもできます。
 個人のアプリでバックエンドにGASを利用していて、ライブラリを開発した際に得られた知見と成果の内容です。
 
 
@@ -33,8 +33,8 @@ Spreadsheetsのメリットは@<strong>{非エンジニアでも触れる}だと
 
 
 
-良いところしかないのかと言うとそうではありません。GASでSpreadsheetsを利用する際に使うSpreadsheet Serviceが提供しているメソッドでは、SQLを利用してデータを抽出することができません。
-そこで SpreadSheetsSQL というSpreadsheetsからSQLライクにデータを抽出できるGASのライブラリを公開しています。ライブラリを使うメリットとしては@<strong>{Spreadsheetsのセルを意識する必要がなくなる}というところにあります。
+良いところしかないのかと言うとそうではありません。GASでSpreadsheetsを利用する際に使うSpreadsheet Service@<fn>{4}が提供しているメソッドでは、SQLを利用してデータを抽出することができません。
+そこで SpreadSheetsSQL@<fn>{5} というSpreadsheetsからSQLライクにデータを抽出できるGASのライブラリを公開しています。ライブラリを使うメリットとしては@<strong>{Spreadsheetsのセルを意識する必要がなくなる}というところにあります。
 もちろん、このライブラリなしでもDBとして利用することは可能です。固定のセルを取得するだけなら、直にSpreadsheet Serviceを利用した方が良いと思います。
 
 
@@ -78,7 +78,7 @@ function open(id, name) {
 //}
 
 
-コードではこのようになっています。コメントはJSDocで記述することができます。
+コードではこのようになっています。コメントはJSDoc@<fn>{6}で記述することができます。
 @<tt>{new SpreadSheetsSQL_(id, name)}で@<tt>{SpreadSheetsSQL_}というクラスをインスタンス化していることがわかると思います。
 また、クラス名の末尾にアンダースコアがついていることにお気付きかと思います。これはスコープ制御をするためであり@<strong>{ライブラリ内でのみ参照できるプライベートな状態}になります。
 @<tt>{SpreadSheetsSQL.open()}した際の戻り値は@<tt>{SpreadSheetsSQL_}型ですが、JSDocにはアンダースコアなしで記述されています。
@@ -146,7 +146,7 @@ class SpreadSheetsSQL_ {
 
 
 たったこれだけで、他人がでライブラリとしてGASプロジェクトを扱うことができます。
-利用できるとは言ってもドキュメントが必要ですよね？実はJSDocを書いていれば、https://script.google.com/macros/library/d/スクリプトID/バージョン で見ることができます。公式がきちんとドキュメントまでサポートしているのはとても嬉しいことですね。
+利用できるとは言ってもドキュメントが必要ですよね？実はJSDocを書いていれば、https://script.google.com/macros/library/d/スクリプトID/バージョン で見ることができます。公式がきちんとドキュメントまでサポート@<fn>{7}しているのはとても嬉しいことですね。
 
 
 == おまけ: ES6 + ローカルで開発する
@@ -158,7 +158,7 @@ GASは個人でサーバを用意せず、気軽に開発できて便利です�
 
 
 
-ローカルのファイルをアップロードするための選択肢としていくつか方法がありますが、今回はGoogleDevelopersJapanで過去に紹介された node-google-apps-script を利用します。
+ローカルのファイルをアップロードするための選択肢としていくつか方法がありますが、今回はGoogleDevelopersJapanで過去に紹介された node-google-apps-script@<fn>{8} を利用します。
 セットアップはURL先に譲ります。
 
 
@@ -226,3 +226,20 @@ gulp.task('upload', () => {
 
 
 どうでしたか？GoogleAppsScriptが大きく目立つことがない中、更にそのライブラリを作るというニッチなところまとめてみました。Google AppsScript + Google SpreadsheetsをAPI + DBとして使えば、バックエンドとして利用することができます。またクライアントとのやり取りだけではなく、cronのように定期的に処理を実行することも可能です。個人ではなかなかサーバ側に手が出せないという人や、ちょっとした便利ツールを作る時にとても便利だと思います。これを機に、もっとGoogle AppsScriptを使う人が増え便利なライブラリも増えるといいなあと思っています。@<br>{}J( 'ー`)し < 良いGoogle AppsScriptライフを！
+
+
+//footnote[1][https://developers.google.com/apps-script]
+
+//footnote[2][https://docs.google.com/spreadsheets]
+
+//footnote[3][https://developers.google.com/fusiontables]
+
+//footnote[4][https://developers.google.com/apps-script/reference/spreadsheet/]
+
+//footnote[5][https://github.com/roana0229/spreadsheets-sql]
+
+//footnote[6][http://usejsdoc.org]
+
+//footnote[7][執筆時点2017/04/16時点ではCSSが読み込めない状態になっています。]
+
+//footnote[8][https://github.com/danthareja/node-google-apps-script]
