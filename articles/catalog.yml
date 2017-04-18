@@ -2,11 +2,11 @@ PREDEF:
   - preface.re
 CHAPS:
   - gas.re
-  - orm.re
-  - masao.re
   - friends-translator.re
   - mysql-graph.re
+  - orm.re
   - makoto.re
+  - masao.re
   - omega999.re
   - spyc.re
 
