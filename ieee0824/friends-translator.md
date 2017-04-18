@@ -305,9 +305,9 @@ type classifier struct {
 // 分類器を初期化する
 func newClassifier() *classifier {
     return &classifier{
-        bayesian.NewClassifier(P, N), 
-        bayesian.NewClassifier(N, E), 
-        bayesian.NewClassifier(E, P), 
+        bayesian.NewClassifier(P, N),
+        bayesian.NewClassifier(N, E),
+        bayesian.NewClassifier(E, P),
     }   
 }
 ```
@@ -340,15 +340,15 @@ func (c *classifier) DeliberationNP(s string) bayesian.Class {
         PScore = PScore * (-1 * pnScores[0])
         NScore = NScore * (-1 * pnScores[1])
     }
-    niScores, _, nib := c.NE.LogScores(doc)
+    neScores, _, neb := c.NE.LogScores(doc)
     if nib {
         NScore = NScore * (-1 * niScores[0])
         EScore = EScore * (-1 * niScores[1])
     }
-    ipScores, _, ipb := c.EP.LogScores(doc)
-    if ipb {
-        EScore = EScore * (-1 * ipScores[0])
-        PScore = PScore * (-1 * ipScores[1])
+    epScores, _, epb := c.EP.LogScores(doc)
+    if epb {
+        EScore = EScore * (-1 * epScores[0])
+        PScore = PScore * (-1 * epScores[1])
     }
 
     if PScore < NScore {
