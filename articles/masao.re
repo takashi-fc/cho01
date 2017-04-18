@@ -140,6 +140,8 @@ WHERE
   self.id = 1 AND self.id != friends.id
 ORDER BY 
   distance ASC
+HAVING
+  distance <= 0.009
 //}
 
 
